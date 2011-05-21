@@ -10,8 +10,9 @@ fi
 OPTS_SPEC="\
 git subtree add   --prefix=<prefix> <commit>
 git subtree merge --prefix=<prefix> <commit>
-git subtree pull  --prefix=<prefix> <repository> <refspec...>
-git subtree push  --prefix=<prefix> <repository> <refspec...>
+git subtree pull  --prefix=<prefix> <branch>
+git subtree pull_all
+git subtree push  --prefix=<prefix> <branch>
 git subtree split --prefix=<prefix> <commit...>
 --
 h,help        show the help
@@ -100,16 +101,18 @@ done
 command="$1"
 shift
 case "$command" in
-	add|merge|pull) default= ;;
+	add|merge|pull|pull_all|push_all) default= ;;
 	split|push) default="--default HEAD" ;;
 	*) die "Unknown command '$command'" ;;
 esac
 
-if [ -z "$prefix" ]; then
+if [ -z "$prefix" -a "$command" != "pull_all" -a "$command" != "push_all" ]; then
 	die "You must provide the --prefix option."
 fi
 
 case "$command" in
+    pull_all);;
+    push_all);;
 	add) [ -e "$prefix" ] && 
 		die "prefix '$prefix' already exists." ;;
 	*)   [ -e "$prefix" ] || 
@@ -118,7 +121,7 @@ esac
 
 dir="$(dirname "$prefix/.")"
 
-if [ "$command" != "pull" -a "$command" != "add" -a "$command" != "push" ]; then
+if [ "$command" != "pull" -a "$command" != "add" -a "$command" != "push" -a "$command" != "pull_all" ]; then
 	revs=$(git rev-parse $default --revs-only "$@") || exit $?
 	dirs="$(git rev-parse --no-revs --no-flags "$@")" || exit $?
 	if [ -n "$dirs" ]; then
@@ -718,6 +721,22 @@ cmd_push()
 	else
 	    die "'$dir' must already exist. Try 'git subtree add'."
 	fi
+}
+
+cmd_pull_all()
+{
+    git config -f .gittrees -l | grep subtree | grep path | grep -o '=.*' | grep -o '[^=].*' |
+        while read path; do
+            git subtree pull -P $path master || exit $?
+        done
+}
+
+cmd_push_all()
+{
+    git config -f .gittrees -l | grep subtree | grep path | grep -o '=.*' | grep -o '[^=].*' |
+        while read path; do
+            git subtree push -P $path master || exit $?
+        done
 }
 
 "cmd_$command" "$@"
