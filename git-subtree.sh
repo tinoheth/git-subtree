@@ -187,9 +187,9 @@ cache_set()
     if [ "$oldrev" != "latest_old" \
         -a "$oldrev" != "latest_new" \
         -a -e "$cachedir/$oldrev" ]; then
-    die "cache for $oldrev already exists!"
-fi
-echo "$newrev" >"$cachedir/$oldrev"
+        die "cache for $oldrev already exists!"
+    fi
+    echo "$newrev" >"$cachedir/$oldrev"
 }
 
 rev_exists()
@@ -335,7 +335,7 @@ add_msg()
     git-subtree-dir: $dir
     git-subtree-mainline: $latest_old
     git-subtree-split: $latest_new
-    EOF
+EOF
 }
 
 add_squashed_msg()
@@ -363,7 +363,7 @@ rejoin_msg()
     git-subtree-dir: $dir
     git-subtree-mainline: $latest_old
     git-subtree-split: $latest_new
-    EOF
+EOF
 }
 
 squash_msg()
