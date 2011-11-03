@@ -15,6 +15,7 @@ git subtree pull-all
 git subtree push-all
 git subtree push  --prefix=<prefix> [<repository> [<refspec>...]]
 git subtree split --prefix=<prefix> <commit...>
+git subtree diff  --prefix=<prefix> [<repository> [<refspec>...]]
 --
 h,help        show the help
 q             quiet
@@ -103,7 +104,7 @@ command="$1"
 shift
 case "$command" in
     add|merge|pull|pull-all|push-all) default= ;;
-    split|push) default="--default HEAD" ;;
+    split|push|diff) default="--default HEAD" ;;
     *) die "Unknown command '$command'" ;;
 esac
 
@@ -122,7 +123,7 @@ esac
 
 dir="$(dirname "$prefix/.")"
 
-if [ "$command" != "pull" -a "$command" != "add" -a "$command" != "push" -a "$command" != "pull-all" ]; then
+if [ "$command" != "pull" -a "$command" != "add" -a "$command" != "push" -a "$command" != "pull-all" -a "$command" != "diff" ]; then
     revs=$(git rev-parse $default --revs-only "$@") || exit $?
     dirs="$(git rev-parse --no-revs --no-flags "$@")" || exit $?
     if [ -n "$dirs" ]; then
@@ -725,6 +726,36 @@ cmd_pull()
     fi
 }
 
+cmd_diff() 
+{
+    if [ -e "$dir" ]; then
+        if [ $# -eq 1 ]; then 
+            repository=$(git config -f .gittrees subtree.$prefix.url)
+            refspec=$1
+        elif [ $# -eq 2 ]; then 
+            repository=$1
+            refspec=$2
+        else
+            repository=$(git config -f .gittrees subtree.$prefix.url)
+            refspec=$(git config -f .gittrees subtree.$prefix.branch)
+        fi
+        # this is ugly, but I don't know of a better way to do it. My git-fu is weak. 
+        # git diff-tree expects a treeish, but I have only a repository and branch name.
+        # I don't know how to turn that into a treeish without creating a remote.
+        # Please change this if you know a better way! 
+        tmp_remote=__diff-tmp
+        git remote rm $tmp_remote > /dev/null 2>&1
+        git remote add -t $refspec $tmp_remote $repository > /dev/null
+        # we fetch as a separate step so we can pass -q (quiet), which isn't an option for "git remote"
+        # could this instead be "git fetch -q $repository $refspec" and leave aside creating the remote?
+        # Still need a treeish for the diff-tree command...
+        git fetch -q $tmp_remote 
+        git diff-tree -p refs/remotes/$tmp_remote/$refspec
+        git remote rm $tmp_remote > /dev/null 2>&1
+    else 
+        die "Cannot resolve directory '$dir'. Please point to an existing subtree directory to diff. Try 'git subtree add' to add a subtree."
+    fi
+}
 cmd_push()
 {
     if [ $# -gt 2 ]; then
