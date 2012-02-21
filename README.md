@@ -18,6 +18,12 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
+IF ANYONE IS INTERESTED IN THIS FORK AT ALL, I GUESS HE WANTS
+TO KNOW ABOUT THE DIFFERENCES COMPARED TO IT'S ORIGIN:
+THIS VERSION JUST MAKES --squash THE DEFAULT BEHAVIOR WHERE THIS
+OPTION IS SUPPORTED (AND PROPABLY BREAKS ALL OTHER ASPECTS
+THAT I PERSONALLY DON'T USE ;-)
+
 Subtrees allow subprojects to be included within a subdirectory
 of the main project, optionally including the subproject's
 entire history.
@@ -77,11 +83,11 @@ merge::
 	Merge recent changes up to <commit> into the <prefix>
 	subtree.  As with normal 'git merge', this doesn't
 	remove your own local changes; it just merges those
-	changes into the latest <commit>.  With '--squash',
-	creates only one commit that contains all the changes,
-	rather than merging in the entire history.
+	changes into the latest <commit>.
+	Creates only one commit that contains all the changes;
+	to merge in the entire history, use "--no-squash".
 
-	If you use '--squash', the merge direction doesn't
+	Unless you use '--no-squash', the merge direction doesn't
 	always have to be forward; you can use this command to
 	go back in time from v2.5 to v2.4, for example.  If your
 	merge introduces a conflict, you can resolve it in the
@@ -119,7 +125,7 @@ split::
 	commits on top of the history you generated last time,
 	so 'git merge' and friends will work as expected.
 	
-	Note that if you use '--squash' when you merge, you
+	Note that if you don't use '--no-squash' when you merge, you
 	should usually not just '--rejoin' when you split.
 
 

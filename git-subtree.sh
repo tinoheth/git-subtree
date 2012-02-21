@@ -4,6 +4,7 @@
 #
 # Copyright (C) 2009 Avery Pennarun <apenwarr@gmail.com>
 #
+
 if [ $# -eq 0 ]; then
     set -- -h
 fi
@@ -29,7 +30,8 @@ ignore-joins  ignore prior --rejoin commits
 onto=         try connecting new tree to an existing one
 rejoin        merge the new branch back into HEAD
 options for 'add', 'merge', 'pull' and 'push'
-squash        merge subtree changes as a single commit
+squash        merge subtree changes as a single commit (default behavior)
+no-squash     disable squash and keep the full history of the subtree
 "
 eval "$(echo "$OPTS_SPEC" | git rev-parse --parseopt -- "$@" || echo exit $?)"
 
@@ -46,7 +48,7 @@ onto=
 rejoin=
 ignore_joins=
 annotate=
-squash=
+squash=1
 message=
 
 debug()
